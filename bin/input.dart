@@ -33,7 +33,7 @@ void main() {
   final lpTemplate = allocateTemplate(items: 1);
 
   final dlgTemplate = lpTemplate.cast<DLGTEMPLATE>().ref;
-  dlgTemplate.style = WS_POPUP | WS_VISIBLE;
+  dlgTemplate.style = WS_POPUP | WS_VISIBLE | WS_SYSMENU | DS_MODALFRAME;
   dlgTemplate.dwExtendedStyle = WS_EX_TOPMOST;
   dlgTemplate.cdit = 1; // Number of child elements, let's start with 1.
   dlgTemplate.x = 0;
@@ -53,13 +53,14 @@ void main() {
   // now the array of DLGITEMTEMPLATES begins
   final itemTemplate1 =
       lpTemplate.elementAt(sizeOfDlgTemplate + 6).cast<DLGITEMTEMPLATE>().ref;
-  itemTemplate1.style = WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | WS_BORDER;
+  itemTemplate1.style =
+      WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | WS_BORDER;
   itemTemplate1.dwExtendedStyle = WS_EX_NOPARENTNOTIFY;
   itemTemplate1.x = 190;
   itemTemplate1.y = 160;
   itemTemplate1.cx = 50;
   itemTemplate1.cy = 14;
-  itemTemplate1.id = 0;
+  itemTemplate1.id = IDOK;
 
   final lpItemTemplate1Postfix =
       itemTemplate1.addressOf.cast<Uint8>().elementAt(sizeOfDlgitemTemplate);
@@ -69,14 +70,12 @@ void main() {
   lpItemTemplate1Postfix.elementAt(2).cast<Uint16>().value = 0x0080; // button
 
   // Text
-  lpItemTemplate1Postfix.elementAt(4).cast<Uint16>().value =
-      0x0001; // null-terminated string
-  lpItemTemplate1Postfix.elementAt(6).cast<Uint16>().value = 0x004F; // 'O'
-  lpItemTemplate1Postfix.elementAt(8).cast<Uint16>().value = 0x004B; // 'K'
-  lpItemTemplate1Postfix.elementAt(10).cast<Uint16>().value = 0x0000; // NUL
+  lpItemTemplate1Postfix.elementAt(4).cast<Uint16>().value = 0x004F; // 'O'
+  lpItemTemplate1Postfix.elementAt(6).cast<Uint16>().value = 0x004B; // 'K'
+  lpItemTemplate1Postfix.elementAt(8).cast<Uint16>().value = 0x0000; // NUL
 
   // Creation data
-  lpItemTemplate1Postfix.elementAt(12).cast<Uint16>().value = 0x0000; // None
+  lpItemTemplate1Postfix.elementAt(10).cast<Uint16>().value = 0x0000; // None
 
   final lpDialogFunc = Pointer.fromFunction<DlgProc>(dialogReturnProc, 0);
 
@@ -100,6 +99,7 @@ void main() {
 
   ShowWindow(hWnd, SW_SHOW);
 
+  print('Press Enter at the command line to close.');
   stdin.readLineSync();
 
   DestroyWindow(hWnd);

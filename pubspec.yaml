@@ -7,9 +7,7 @@ environment:
 
 dependencies:
   ffi: ^0.2.0-nullsafety.1
-  win32:
-    path:
-      ../win32
+  win32: ^2.0.0-nullsafety.3
 
 dev_dependencies:
   lint: ^1.5.1

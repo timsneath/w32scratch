@@ -99,8 +99,11 @@ void main() {
 
   ShowWindow(hWnd, SW_SHOW);
 
-  print('Press Enter at the command line to close.');
-  stdin.readLineSync();
+  final msg = MSG.allocate();
+  while (GetMessage(msg.addressOf, NULL, 0, 0) != 0) {
+    TranslateMessage(msg.addressOf);
+    DispatchMessage(msg.addressOf);
+  }
 
   DestroyWindow(hWnd);
 }

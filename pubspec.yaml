@@ -1,0 +1,15 @@
+name: w32scratch
+description: 
+  A playground for testing Win32 package usage
+
+environment:
+  sdk: '>=2.12.0-0 <3.0.0'
+
+dependencies:
+  ffi: ^0.2.0-nullsafety.1
+  win32:
+    path:
+      ../win32
+
+dev_dependencies:
+  lint: ^1.5.1

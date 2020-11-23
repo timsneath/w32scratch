@@ -2,7 +2,7 @@ import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 
 import 'package:win32/win32.dart';
-import 'utils.dart';
+import 'dialog_helper.dart';
 
 const ID_TEXT = 200;
 const ID_EDITTEXT = 201;

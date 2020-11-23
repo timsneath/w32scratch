@@ -1,26 +1,31 @@
 import 'dart:ffi';
-import 'package:ffi/ffi.dart';
 
 import 'package:win32/win32.dart';
 
-const sizeOfDlgTemplate = 18;
-const sizeOfDlgitemTemplate = 18;
+/// Size in 16-bit WORDs of the DLGTEMPLATE struct
+const dlgTemplateSize = 9;
+
+/// Size in 16-bit WORDs of the DLGITEMTEMPLATE struct
+const dlgItemTemplateSize = 9;
 
 /// Sets the memory at the pointer location to the string supplied.
 ///
-/// Returns the number of bytes (not characters) written.
-int setString(Pointer ptr, String string) {
+/// Returns the number of WORDs written.
+int setString(Pointer<Uint16> ptr, String string) {
   final units = string.codeUnits;
-  final nativeString = ptr.cast<Uint16>().asTypedList(units.length + 1);
+  final nativeString = ptr.asTypedList(units.length + 1);
 
   nativeString.setAll(0, units);
   nativeString[units.length] = 0;
-  return (units.length + 1) * 2;
+  return units.length + 1;
 }
 
-int setDialog(Pointer<Uint8> ptr,
+/// Sets the memory at the pointer location to the dialog supplied.
+///
+/// Returns the number of WORDs written.
+int setDialog(Pointer<Uint16> ptr,
     {required int style,
-    required int dwExtendedStyle,
+    int dwExtendedStyle = 0,
     int cdit = 1,
     int x = 0,
     int y = 0,
@@ -29,6 +34,8 @@ int setDialog(Pointer<Uint8> ptr,
     int menu = 0,
     int windowClass = 0,
     String title = ''}) {
+  // Since everything is aligned in WORD or DWORD boundaries, it's easier to
+  // treat this as a 16-bit pointer.
   var idx = 0;
 
   ptr.cast<DLGTEMPLATE>().ref
@@ -40,36 +47,39 @@ int setDialog(Pointer<Uint8> ptr,
     ..cx = cx
     ..cy = cy;
 
-  idx += sizeOfDlgTemplate;
+  idx += dlgTemplateSize;
 
   // menu
   if (menu == 0x0000) {
-    ptr.elementAt(idx).cast<Uint16>().value = 0x0000;
-    idx += 2;
+    ptr[idx++] = 0x0000;
   } else {
-    ptr.elementAt(idx).cast<Uint16>().value = 0xFFFF;
-    idx += 2;
-    ptr.elementAt(idx).cast<Uint16>().value = menu;
-    idx += 2;
+    ptr[idx++] = 0xFFFF;
+    ptr[idx++] = menu;
   }
 
   // window class is 0x0000 -- no window class
-  ptr.elementAt(idx).cast<Uint16>().value = windowClass;
-  idx += 2;
+  ptr[idx++] = windowClass;
 
   // title
   if (title.isEmpty) {
-    ptr.elementAt(idx).cast<Uint16>().value = 0x0000;
-    idx += 2;
+    ptr[idx++] = 0x0000;
   } else {
     idx += setString(ptr.elementAt(idx), title);
+  }
+
+  // Move idx forward so that it aligns to the next DWORD boundary
+  if ((ptr.address + idx) % 4 != 0) {
+    ptr[idx++] = 0x0000;
   }
   return idx;
 }
 
-int setDialogItem(Pointer ptr,
+/// Sets the memory at the pointer location to the dialog item supplied.
+///
+/// Returns the number of WORDs written.
+int setDialogItem(Pointer<Uint16> ptr,
     {required int style,
-    required int dwExtendedStyle,
+    int dwExtendedStyle = 0,
     required int x,
     required int y,
     required int cx,
@@ -78,11 +88,12 @@ int setDialogItem(Pointer ptr,
     int windowSystemClass = 0,
     String windowClass = '',
     required String text,
-    int creationData = 0}) {
+    int creationDataByteLength = 0}) {
   if (windowSystemClass == 0 && windowClass == '') {
     throw Exception('Either windowSystemClass or windowClass must be defined.');
   }
-
+  // Since everything is aligned in WORD or DWORD boundaries, it's easier to
+  // treat this as a 16-bit pointer.
   var idx = 0;
   ptr.cast<DLGITEMTEMPLATE>().ref
     ..style = style
@@ -92,29 +103,25 @@ int setDialogItem(Pointer ptr,
     ..cx = cx
     ..cy = cy
     ..id = id;
-  idx += sizeOfDlgitemTemplate;
+  idx += dlgItemTemplateSize;
 
   // Window class
   if (windowClass.isNotEmpty) {
     idx += setString(ptr.elementAt(idx), windowClass);
   } else {
-    ptr.elementAt(idx).cast<Uint16>().value = 0xFFFF;
-    idx += 2;
-
-    ptr.elementAt(idx).cast<Uint16>().value = windowSystemClass;
-    idx += 2;
+    ptr[idx++] = 0xFFFF;
+    ptr[idx++] = windowSystemClass;
   }
 
   // Text
   idx += setString(ptr.elementAt(idx), text);
 
   // Creation data
-  ptr.elementAt(idx).cast<Uint16>().value = creationData;
-  idx += 2;
+  ptr[idx++] = creationDataByteLength;
 
-  // Set idx so that it aligns to the next DWORD boundary
-  while ((ptr.address + idx) % 4 != 0) {
-    ptr.elementAt(idx++).cast<Uint8>().value = 0x00;
+  // Move idx forward so that it aligns to the next DWORD boundary
+  if ((ptr.address + idx) % 4 != 0) {
+    ptr[idx++] = 0x0000;
   }
 
   return idx;

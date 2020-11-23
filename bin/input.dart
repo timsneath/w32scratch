@@ -70,6 +70,9 @@ void main() {
   lpItemTemplate1Postfix.elementAt(2).cast<Uint16>().value = 0x0080; // button
 
   // Text
+
+  // TODO: Add a simple method to poke Utf-8 string into right memory, rather
+  // than character-by-character :)
   lpItemTemplate1Postfix.elementAt(4).cast<Uint16>().value = 0x004F; // 'O'
   lpItemTemplate1Postfix.elementAt(6).cast<Uint16>().value = 0x004B; // 'K'
   lpItemTemplate1Postfix.elementAt(8).cast<Uint16>().value = 0x0000; // NUL

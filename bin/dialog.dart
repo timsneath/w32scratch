@@ -8,7 +8,7 @@ const ID_TEXT = 200;
 const ID_EDITTEXT = 201;
 
 final hInstance = GetModuleHandle(nullptr);
-var textEntered = '';
+String textEntered = '';
 
 void main() {
   // Allocate 2KB, which should be sufficient space for the dialog in memory.
@@ -23,7 +23,7 @@ void main() {
       cy: 200);
 
   idx += setDialogItem(ptr.elementAt(idx),
-      style: WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+      style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
       x: 100,
       y: 160,
       cx: 50,
@@ -33,7 +33,7 @@ void main() {
       text: 'OK');
 
   idx += setDialogItem(ptr.elementAt(idx),
-      style: WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+      style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
       x: 190,
       y: 160,
       cx: 50,
@@ -53,7 +53,7 @@ void main() {
       text: 'Some static wrapped text here.');
 
   idx += setDialogItem(ptr.elementAt(idx),
-      style: WS_CHILD | WS_VISIBLE | WS_BORDER,
+      style: WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
       x: 20,
       y: 50,
       cx: 100,
